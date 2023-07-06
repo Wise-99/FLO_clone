@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
 import com.test.floclone.databinding.ActivitySongBinding
 import java.lang.Exception
 
@@ -14,6 +15,7 @@ class SongActivity: AppCompatActivity() {
     lateinit var timer : Timer
     // Activity가 소멸될 때 해제해주기 위해 nullable로 설정
     private var mediaPlayer : MediaPlayer? = null
+    private var gson : Gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,8 +49,10 @@ class SongActivity: AppCompatActivity() {
         song.second = ((binding.songProgressSb.progress * song.playTime)/100)/1000
         val sharedPreferences = getSharedPreferences("song", MODE_PRIVATE)
         val editor = sharedPreferences.edit() // 에디터
+        val songJson = gson.toJson(song)
+        editor.putString("songData", songJson)
 
-
+        editor.apply()
     }
 
     override fun onDestroy() {
