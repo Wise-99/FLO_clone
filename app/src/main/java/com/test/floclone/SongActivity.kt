@@ -1,5 +1,6 @@
 package com.test.floclone
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.view.View
@@ -11,6 +12,8 @@ class SongActivity: AppCompatActivity() {
     lateinit var binding: ActivitySongBinding
     lateinit var song : Song
     lateinit var timer : Timer
+    // Activity가 소멸될 때 해제해주기 위해 nullable로 설정
+    private var mediaPlayer : MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +40,23 @@ class SongActivity: AppCompatActivity() {
         }
     }
 
+    // 사용자가 포커스를 잃었을 때 음악 중지
+    override fun onPause() {
+        super.onPause()
+        setPlayerStatus(false)
+        song.second = ((binding.songProgressSb.progress * song.playTime)/100)/1000
+        val sharedPreferences = getSharedPreferences("song", MODE_PRIVATE)
+        val editor = sharedPreferences.edit() // 에디터
+
+
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         // 스레드 강제 종료
         timer.interrupt()
+        mediaPlayer?.release() // 미디어 플레이어가 갖고 있던 리소스 해제
+        mediaPlayer = null // 미디어 플레이어 해제
     }
 
     // song 데이터 클래스 초기화
@@ -51,7 +67,8 @@ class SongActivity: AppCompatActivity() {
                 intent.getStringExtra("singer")!!,
                 intent.getIntExtra("second",0),
                 intent.getIntExtra("playTime", 0),
-                intent.getBooleanExtra("isPlaying", false)
+                intent.getBooleanExtra("isPlaying", false),
+                intent.getStringExtra("music")!!
             )
         }
         // 객체 초기화와 동시에 타이머 작동
@@ -65,6 +82,8 @@ class SongActivity: AppCompatActivity() {
         binding.songStartTimeTv.text = String.format("%02d:%02d", song.second / 60, song.second % 60)
         binding.songEndTimeTv.text = String.format("%02d:%02d", song.playTime / 60, song.playTime % 60)
         binding.songProgressSb.progress = (song.second * 1000 / song.playTime)
+        val music = resources.getIdentifier(song.music, "raw", this.packageName)
+        mediaPlayer = MediaPlayer.create(this, music)
 
         setPlayerStatus(song.isPlaying)
     }
@@ -77,11 +96,15 @@ class SongActivity: AppCompatActivity() {
         if (isPlaying){
             binding.songMiniplayerIv.visibility = View.GONE
             binding.songPauseIv.visibility = View.VISIBLE
+            mediaPlayer?.start()
         }
         // 재생 버튼 표시(노래 정지)
         else {
             binding.songMiniplayerIv.visibility = View.VISIBLE
             binding.songPauseIv.visibility = View.GONE
+            if (mediaPlayer?.isPlaying == true){
+                mediaPlayer?.pause()
+            }
         }
     }
 

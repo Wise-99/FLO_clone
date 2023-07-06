@@ -19,8 +19,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Song 데이터 클래스에 제목과 가수 이름을 담아 저장
-        val song = Song(binding.mainMiniplayerTitleTv.text.toString(), binding.mainMiniplayerSingerTv.text.toString(),0,60,false)
-        // Log.d("Song", song.title + song.singer)
+        val song = Song(binding.mainMiniplayerTitleTv.text.toString(), binding.mainMiniplayerSingerTv.text.toString(),0,60,false, "lilac_iu")
 
         binding.mainPlayerCl.setOnClickListener {
             // startActivity(Intent(this, SongActivity::class.java))
@@ -30,6 +29,7 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("second", song.second)
             intent.putExtra("playTime", song.playTime)
             intent.putExtra("isPlaying", song.isPlaying)
+            intent.putExtra("music", song.music)
             startActivity(intent)
         }
 
